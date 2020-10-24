@@ -15,14 +15,39 @@ _libgauss.gauss_vec_dot_f64.restype = ctypes.c_double
 
 def _iterable_to_list(iterable):
     if isinstance(iterable, list):
-        l = iterable
+        pylist = iterable
     else:
-        l = list(iterable)
-    return l
+        pylist = list(iterable)
+    return pylist
 
 
-def _load_vec_f64(l):
-    c_array = (ctypes.c_double * len(l))(*l)
+def _load_vec_f64(pylist):
+    c_array = (ctypes.c_double * len(pylist))(*pylist)
+    return c_array
+
+
+def _load_vec_f32(pylist):
+    c_array = (ctypes.c_float * len(pylist))(*pylist)
+    return c_array
+
+
+def _load_vec_i32(pylist):
+    c_array = (ctypes.c_int32 * len(pylist))(*pylist)
+    return c_array
+
+
+def _load_vec_i64(pylist):
+    c_array = (ctypes.c_int64 * len(pylist))(*pylist)
+    return c_array
+
+
+def _load_vec_u32(pylist):
+    c_array = (ctypes.c_uint32 * len(pylist))(*pylist)
+    return c_array
+
+
+def _load_vec_u64(pylist):
+    c_array = (ctypes.c_uint64 * len(pylist))(*pylist)
     return c_array
 
 
@@ -44,9 +69,10 @@ class Vec:
         """Calculate the dot product of self and vector b"""
         size = len(b)
         if size != len(self):
-            raise ValueError(
-                "vectors not alligned for dot product, {} != {}".format(len(self), size)
+            msg = "vectors not alligned for dot product, {} != {}".format(
+                len(self), size
             )
+            raise ValueError(msg)
 
         if isinstance(b, Vec):
             b_vec = b
