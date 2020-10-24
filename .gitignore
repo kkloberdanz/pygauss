@@ -3,3 +3,7 @@
 *.o
 test/main_test
 __pycache__/
+build/
+dist/
+gauss.egg-info/
+venv/
