@@ -19,7 +19,9 @@ def _exit_handler():
     global _libgauss
     _libgauss.gauss_close()
 
+
 atexit.register(_exit_handler)
+
 
 def _iterable_to_list(iterable):
     if isinstance(iterable, list):
