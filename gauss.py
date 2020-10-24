@@ -1,17 +1,25 @@
 import ctypes
 import os
+import atexit
 
 
 def _load_libgauss():
     full_path = os.path.dirname(os.path.abspath(__file__))
     lib_path = "{}/lib/libgauss.so".format(full_path)
     lib = ctypes.cdll.LoadLibrary(lib_path)
+    lib.gauss_init()
     return lib
 
 
 _libgauss = _load_libgauss()
 _libgauss.gauss_vec_dot_f64.restype = ctypes.c_double
 
+
+def _exit_handler():
+    global _libgauss
+    _libgauss.gauss_close()
+
+atexit.register(_exit_handler)
 
 def _iterable_to_list(iterable):
     if isinstance(iterable, list):
