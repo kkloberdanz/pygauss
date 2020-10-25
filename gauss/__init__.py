@@ -73,18 +73,19 @@ def _setup_binop(self, other):
         b = Vec(other)
 
     if len(b) != len(self):
-        msg = "vectors not alligned for add, {} != {}".format(
-            len(self), len(b)
-        )
+        s1 = len(self)
+        s2 = len(b)
+        msg = "vectors not alligned for add, {} != {}".format(s1, s2)
         raise ValueError(msg)
     dst = _load_vec_f64(b)
     return dst, b
+
 
 _number_types = (int, float)
 
 
 class Vec:
-    def __init__(self, iterable=None):
+    def __init__(self, iterable=None, dtype=None):
         if iterable is not None:
             self._py_data = _iterable_to_list(iterable)
 
@@ -102,16 +103,12 @@ class Vec:
 
     def __add__(self, other):
         dst, b = _setup_binop(self, other)
-        result = _libgauss.gauss_vec_add_f64(
-            dst, self._data, b._data, len(self)
-        )
+        _libgauss.gauss_vec_add_f64(dst, self._data, b._data, len(self))
         return Vec(dst)
 
     def __mul__(self, other):
         dst, b = _setup_binop(self, other)
-        result = _libgauss.gauss_vec_mul_f64(
-            dst, self._data, b._data, len(self)
-        )
+        _libgauss.gauss_vec_mul_f64(dst, self._data, b._data, len(self))
         return Vec(dst)
 
     def dot(self, b):
@@ -143,6 +140,7 @@ class Vec:
 
     def max(self):
         return self[self.index_max()]
+
 
 if __name__ == "__main__":
     pass
