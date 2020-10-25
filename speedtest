@@ -1,0 +1,14 @@
+import numpy as np
+import gauss
+
+a = gauss.Vec(range(100000))
+b = gauss.Vec(range(100000))
+
+c = np.array(list(range(100000)))
+d = np.array(list(range(100000)))
+
+def speedtest(a, b):
+    x = 0.0
+    for i in range(1000000):
+        x += a.dot(b)
+    return x
