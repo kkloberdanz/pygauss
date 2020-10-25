@@ -15,6 +15,7 @@ _libgauss = _load_libgauss()
 _libgauss.gauss_vec_dot_f64.restype = ctypes.c_double
 _libgauss.gauss_vec_norm_f64.restype = ctypes.c_double
 _libgauss.gauss_vec_sumabs_f64.restype = ctypes.c_double
+_libgauss.gauss_vec_index_max_f64.restype = ctypes.c_size_t
 
 
 def _exit_handler():
@@ -136,6 +137,9 @@ class Vec:
 
     def sumabs(self):
         return _libgauss.gauss_vec_sumabs_f64(self._data, len(self))
+
+    def index_max(self):
+        return _libgauss.gauss_vec_index_max_f64(self._data, len(self))
 
 
 if __name__ == "__main__":
