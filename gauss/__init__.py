@@ -141,6 +141,8 @@ class Vec:
     def index_max(self):
         return _libgauss.gauss_vec_index_max_f64(self._data, len(self))
 
+    def max(self):
+        return self[self.index_max()]
 
 if __name__ == "__main__":
     pass
