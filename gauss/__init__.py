@@ -61,6 +61,25 @@ def _load_vec_u64(pylist):
     return c_array
 
 
+def _setup_binop(self, other):
+    if isinstance(other, _number_types):
+        raise ValueError("vector scaling not yet implemented")
+    elif isinstance(other, Vec):
+        b = other
+    else:
+        b = Vec(other)
+
+    if len(b) != len(self):
+        msg = "vectors not alligned for add, {} != {}".format(
+            len(self), len(b)
+        )
+        raise ValueError(msg)
+    dst = _load_vec_f64(b)
+    return dst, b
+
+_number_types = (int, float)
+
+
 class Vec:
     def __init__(self, iterable=None):
         if iterable is not None:
@@ -74,6 +93,23 @@ class Vec:
 
     def __repr__(self):
         return "Vec({})".format(repr(self._py_data))
+
+    def __getitem__(self, index):
+        return self._py_data[index]
+
+    def __add__(self, other):
+        dst, b = _setup_binop(self, other)
+        result = _libgauss.gauss_vec_add_f64(
+            dst, self._data, b._data, len(self)
+        )
+        return Vec(dst)
+
+    def __mul__(self, other):
+        dst, b = _setup_binop(self, other)
+        result = _libgauss.gauss_vec_mul_f64(
+            dst, self._data, b._data, len(self)
+        )
+        return Vec(dst)
 
     def dot(self, b):
         """Calculate the dot product of self and vector b"""
