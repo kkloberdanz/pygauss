@@ -37,35 +37,34 @@ def _iterable_to_list(iterable):
     return pylist
 
 
-# TODO: should probably align memory to enable SIMD operations
-def _load_vec_f64(pylist):
-    c_array = (ctypes.c_double * len(pylist))(*pylist)
-    return c_array
-
-
-def _load_vec_f32(pylist):
-    c_array = (ctypes.c_float * len(pylist))(*pylist)
-    return c_array
-
-
-def _load_vec_i32(pylist):
-    c_array = (ctypes.c_int32 * len(pylist))(*pylist)
-    return c_array
-
-
-def _load_vec_i64(pylist):
-    c_array = (ctypes.c_int64 * len(pylist))(*pylist)
-    return c_array
-
-
-def _load_vec_u32(pylist):
-    c_array = (ctypes.c_uint32 * len(pylist))(*pylist)
-    return c_array
-
-
-def _load_vec_u64(pylist):
-    c_array = (ctypes.c_uint64 * len(pylist))(*pylist)
-    return c_array
+#def _load_vec_f64(pylist):
+#    c_array = (ctypes.c_double * len(pylist))(*pylist)
+#    return c_array
+#
+#
+#def _load_vec_f32(pylist):
+#    c_array = (ctypes.c_float * len(pylist))(*pylist)
+#    return c_array
+#
+#
+#def _load_vec_i32(pylist):
+#    c_array = (ctypes.c_int32 * len(pylist))(*pylist)
+#    return c_array
+#
+#
+#def _load_vec_i64(pylist):
+#    c_array = (ctypes.c_int64 * len(pylist))(*pylist)
+#    return c_array
+#
+#
+#def _load_vec_u32(pylist):
+#    c_array = (ctypes.c_uint32 * len(pylist))(*pylist)
+#    return c_array
+#
+#
+#def _load_vec_u64(pylist):
+#    c_array = (ctypes.c_uint64 * len(pylist))(*pylist)
+#    return c_array
 
 
 def _setup_binop(self, other):
@@ -76,12 +75,14 @@ def _setup_binop(self, other):
     else:
         b = Vec(other)
 
-    if len(b) != len(self):
+    size = len(b)
+    if size != len(self):
         s1 = len(self)
         s2 = len(b)
         msg = "vectors not alligned for add, {} != {}".format(s1, s2)
         raise ValueError(msg)
-    dst = _load_vec_f64(b)
+    buf = ctypes.c_void_p(_libgauss.gauss_simd_alloc(size * 8))
+    dst = Vec(frompointer=(buf, size))
     return dst, b
 
 
@@ -129,13 +130,22 @@ class Vec:
 
     def __add__(self, other):
         dst, b = _setup_binop(self, other)
-        _libgauss.gauss_vec_add_f64(dst, self._data, b._data, len(self))
+        _libgauss.gauss_add_double_array(dst._data, self._data, b._data, len(self))
+        return Vec(dst)
+
+    def __floordiv__(self, other):
+        dst, b = _setup_binop(self, other)
+        _libgauss.gauss_floordiv_double_array(dst._data, self._data, b._data, len(self))
+        return Vec(dst)
+
+    def __truediv__(self, other):
+        dst, b = _setup_binop(self, other)
+        _libgauss.gauss_div_double_array(dst._data, self._data, b._data, len(self))
         return Vec(dst)
 
     def __mul__(self, other):
         dst, b = _setup_binop(self, other)
-        _libgauss.gauss_vec_mul_f64(dst, self._data, b._data, len(self))
-        #_libgauss.gauss_mul_double_array(dst, self._data, b._data, len(self))
+        _libgauss.gauss_mul_double_array(dst._data, self._data, b._data, len(self))
         return Vec(dst)
 
     def dot(self, b):
