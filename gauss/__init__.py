@@ -16,11 +16,14 @@ _libgauss.gauss_vec_dot_f64.restype = ctypes.c_double
 _libgauss.gauss_vec_norm_f64.restype = ctypes.c_double
 _libgauss.gauss_vec_sumabs_f64.restype = ctypes.c_double
 _libgauss.gauss_vec_index_max_f64.restype = ctypes.c_size_t
+_libgauss.gauss_simd_alloc.restype = ctypes.c_void_p
+_libgauss.gauss_double_array_at.restype = ctypes.c_double
 
 
 def _exit_handler():
-    global _libgauss
-    _libgauss.gauss_close()
+    # global _libgauss
+    # _libgauss.gauss_close()
+    pass
 
 
 atexit.register(_exit_handler)
@@ -34,6 +37,7 @@ def _iterable_to_list(iterable):
     return pylist
 
 
+# TODO: should probably align memory to enable SIMD operations
 def _load_vec_f64(pylist):
     c_array = (ctypes.c_double * len(pylist))(*pylist)
     return c_array
@@ -140,6 +144,15 @@ class Vec:
 
     def max(self):
         return self[self.index_max()]
+
+    def sqrt(self):
+        dst = _libgauss.gauss_simd_alloc(len(self) * 8)
+        _libgauss.gauss_sqrt_double_array(dst, self._data, len(self))
+        pydata = [
+            _libgauss.gauss_double_array_at(dst, i) for i in range(len(self))
+        ]
+        _libgauss.gauss_free(dst)
+        return Vec(pydata)
 
 
 if __name__ == "__main__":
