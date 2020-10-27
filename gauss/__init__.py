@@ -89,21 +89,43 @@ _number_types = (int, float)
 
 
 class Vec:
-    def __init__(self, iterable=None, dtype=None):
+    def __init__(self, iterable=None, dtype=None, frompointer=None):
+        self._data = None
         if iterable is not None:
-            self._py_data = _iterable_to_list(iterable)
-
             # TODO: detect datatype and load it appropriately
-            self._data = _load_vec_f64(self._py_data)
+            pydata = _iterable_to_list(iterable)
+            self._len = len(pydata)
+            self._data = ctypes.c_void_p(_libgauss.gauss_simd_alloc(self._len * 8))
+            for i in range(self._len):
+                value = ctypes.c_double(pydata[i])
+                _libgauss.gauss_set_double_array_at(self._data, i, value)
+        elif frompointer:
+            ptr, nmemb = frompointer
+            self._data = ptr
+            self._len = nmemb
+
+    def __del__(self):
+        if self._data is not None:
+            _libgauss.gauss_free(self._data);
+            self._data = None
 
     def __len__(self):
-        return len(self._py_data)
+        return self._len
 
     def __repr__(self):
-        return "Vec({})".format(repr(self._py_data))
+        if len(self) < 10:
+            pydata = list(self)
+            return "Vec({})".format(repr(pydata))
+        else:
+            start = ', '.join(str(self[x]) for x in range(5))
+            end = ', '.join(str(self[x]) for x in range(len(self) - 5, len(self)))
+            return "Vec([{}, ..., {}])".format(start, end)
 
     def __getitem__(self, index):
-        return self._py_data[index]
+        if index >= self._len:
+            raise StopIteration
+        else:
+            return _libgauss.gauss_double_array_at(self._data, index)
 
     def __add__(self, other):
         dst, b = _setup_binop(self, other)
@@ -113,6 +135,7 @@ class Vec:
     def __mul__(self, other):
         dst, b = _setup_binop(self, other)
         _libgauss.gauss_vec_mul_f64(dst, self._data, b._data, len(self))
+        #_libgauss.gauss_mul_double_array(dst, self._data, b._data, len(self))
         return Vec(dst)
 
     def dot(self, b):
@@ -148,11 +171,8 @@ class Vec:
     def sqrt(self):
         dst = _libgauss.gauss_simd_alloc(len(self) * 8)
         _libgauss.gauss_sqrt_double_array(dst, self._data, len(self))
-        pydata = [
-            _libgauss.gauss_double_array_at(dst, i) for i in range(len(self))
-        ]
-        _libgauss.gauss_free(dst)
-        return Vec(pydata)
+        ret = Vec(frompointer=(dst, len(self)))
+        return ret
 
 
 if __name__ == "__main__":
