@@ -81,9 +81,13 @@ def _setup_binop(self, other):
         s2 = len(b)
         msg = "vectors not alligned for add, {} != {}".format(s1, s2)
         raise ValueError(msg)
-    buf = ctypes.c_void_p(_libgauss.gauss_simd_alloc(size * 8))
+    buf = _alloc(size)
     dst = Vec(frompointer=(buf, size))
     return dst, b
+
+
+def _alloc(nmemb):
+    return ctypes.c_void_p(_libgauss.gauss_simd_alloc(nmemb * 8))
 
 
 _number_types = (int, float)
@@ -96,7 +100,7 @@ class Vec:
             # TODO: detect datatype and load it appropriately
             pydata = _iterable_to_list(iterable)
             self._len = len(pydata)
-            self._data = ctypes.c_void_p(_libgauss.gauss_simd_alloc(self._len * 8))
+            self._data = _alloc(self._len)
             for i in range(self._len):
                 value = ctypes.c_double(pydata[i])
                 _libgauss.gauss_set_double_array_at(self._data, i, value)
@@ -179,10 +183,10 @@ class Vec:
         return self[self.index_max()]
 
     def sqrt(self):
-        dst = _libgauss.gauss_simd_alloc(len(self) * 8)
-        _libgauss.gauss_sqrt_double_array(dst, self._data, len(self))
-        ret = Vec(frompointer=(dst, len(self)))
-        return ret
+        ptr = _alloc(len(self))
+        dst = Vec(frompointer=(ptr, len(self)))
+        _libgauss.gauss_sqrt_double_array(dst._data, self._data, len(self))
+        return dst
 
 
 if __name__ == "__main__":
