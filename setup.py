@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="gauss",
-    version="0.0.3",
+    version="0.0.4",
     author="Kyle Kloberdanz",
     author_email="kyle.g.kloberdanz@gmail.com",
     description="Python bindings for Gauss (General Algorithmic Unified Statistical Solvers)",
