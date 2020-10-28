@@ -146,22 +146,22 @@ class Vec:
     def __add__(self, other):
         dst, b = _setup_binop(self, other)
         _libgauss.gauss_add_double_array(dst._data, self._data, b._data, len(self))
-        return Vec(dst)
+        return dst
 
     def __floordiv__(self, other):
         dst, b = _setup_binop(self, other)
         _libgauss.gauss_floordiv_double_array(dst._data, self._data, b._data, len(self))
-        return Vec(dst)
+        return dst
 
     def __truediv__(self, other):
         dst, b = _setup_binop(self, other)
         _libgauss.gauss_div_double_array(dst._data, self._data, b._data, len(self))
-        return Vec(dst)
+        return dst
 
     def __mul__(self, other):
         dst, b = _setup_binop(self, other)
         _libgauss.gauss_mul_double_array(dst._data, self._data, b._data, len(self))
-        return Vec(dst)
+        return dst
 
     def dot(self, b):
         """Calculate the dot product of self and vector b"""
