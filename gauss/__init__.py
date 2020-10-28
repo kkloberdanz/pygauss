@@ -37,32 +37,32 @@ def _iterable_to_list(iterable):
     return pylist
 
 
-#def _load_vec_f64(pylist):
+# def _load_vec_f64(pylist):
 #    c_array = (ctypes.c_double * len(pylist))(*pylist)
 #    return c_array
 #
 #
-#def _load_vec_f32(pylist):
+# def _load_vec_f32(pylist):
 #    c_array = (ctypes.c_float * len(pylist))(*pylist)
 #    return c_array
 #
 #
-#def _load_vec_i32(pylist):
+# def _load_vec_i32(pylist):
 #    c_array = (ctypes.c_int32 * len(pylist))(*pylist)
 #    return c_array
 #
 #
-#def _load_vec_i64(pylist):
+# def _load_vec_i64(pylist):
 #    c_array = (ctypes.c_int64 * len(pylist))(*pylist)
 #    return c_array
 #
 #
-#def _load_vec_u32(pylist):
+# def _load_vec_u32(pylist):
 #    c_array = (ctypes.c_uint32 * len(pylist))(*pylist)
 #    return c_array
 #
 #
-#def _load_vec_u64(pylist):
+# def _load_vec_u64(pylist):
 #    c_array = (ctypes.c_uint64 * len(pylist))(*pylist)
 #    return c_array
 
@@ -115,7 +115,7 @@ class Vec:
 
     def __del__(self):
         if self._data is not None:
-            _libgauss.gauss_free(self._data);
+            _libgauss.gauss_free(self._data)
             self._data = None
 
     def __len__(self):
@@ -126,8 +126,10 @@ class Vec:
             pydata = list(self)
             return "Vec({})".format(repr(pydata))
         else:
-            start = ', '.join(str(self[x]) for x in range(5))
-            end = ', '.join(str(self[x]) for x in range(len(self) - 5, len(self)))
+            start = ", ".join(str(self[x]) for x in range(5))
+            end = ", ".join(
+                str(self[x]) for x in range(len(self) - 5, len(self))
+            )
             return "Vec([{}, ..., {}])".format(start, end)
 
     def __getitem__(self, index):
@@ -141,26 +143,36 @@ class Vec:
             raise IndexError
         else:
             value = ctypes.c_double(item)
-            return _libgauss.gauss_set_double_array_at(self._data, index, value)
+            return _libgauss.gauss_set_double_array_at(
+                self._data, index, value
+            )
 
     def __add__(self, other):
         dst, b = _setup_binop(self, other)
-        _libgauss.gauss_add_double_array(dst._data, self._data, b._data, len(self))
+        _libgauss.gauss_add_double_array(
+            dst._data, self._data, b._data, len(self)
+        )
         return dst
 
     def __floordiv__(self, other):
         dst, b = _setup_binop(self, other)
-        _libgauss.gauss_floordiv_double_array(dst._data, self._data, b._data, len(self))
+        _libgauss.gauss_floordiv_double_array(
+            dst._data, self._data, b._data, len(self)
+        )
         return dst
 
     def __truediv__(self, other):
         dst, b = _setup_binop(self, other)
-        _libgauss.gauss_div_double_array(dst._data, self._data, b._data, len(self))
+        _libgauss.gauss_div_double_array(
+            dst._data, self._data, b._data, len(self)
+        )
         return dst
 
     def __mul__(self, other):
         dst, b = _setup_binop(self, other)
-        _libgauss.gauss_mul_double_array(dst._data, self._data, b._data, len(self))
+        _libgauss.gauss_mul_double_array(
+            dst._data, self._data, b._data, len(self)
+        )
         return dst
 
     def dot(self, b):
