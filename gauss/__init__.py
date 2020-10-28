@@ -14,6 +14,7 @@ def _load_libgauss():
 _libgauss = _load_libgauss()
 _libgauss.gauss_vec_dot_f64.restype = ctypes.c_double
 _libgauss.gauss_vec_norm_f64.restype = ctypes.c_double
+_libgauss.gauss_vec_sum_f64.restype = ctypes.c_double
 _libgauss.gauss_vec_sumabs_f64.restype = ctypes.c_double
 _libgauss.gauss_vec_index_max_f64.restype = ctypes.c_size_t
 _libgauss.gauss_simd_alloc.restype = ctypes.c_void_p
@@ -122,7 +123,7 @@ class Vec:
         return self._len
 
     def __repr__(self):
-        if len(self) < 10:
+        if len(self) < 12:
             pydata = list(self)
             return "Vec({})".format(repr(pydata))
         else:
@@ -193,11 +194,17 @@ class Vec:
         result = _libgauss.gauss_vec_dot_f64(self._data, b_vec._data, size)
         return result
 
-    def norm(self):
+    def l1norm(self):
+        return _libgauss.gauss_vec_sumabs_f64(self._data, len(self))
+
+    def l2norm(self):
         return _libgauss.gauss_vec_norm_f64(self._data, len(self))
 
-    def sumabs(self):
-        return _libgauss.gauss_vec_sumabs_f64(self._data, len(self))
+    def norm(self):
+        return self.l2norm()
+
+    def sum(self):
+        return _libgauss.gauss_vec_sum_f64(self._data, len(self))
 
     def index_max(self):
         return _libgauss.gauss_vec_index_max_f64(self._data, len(self))
