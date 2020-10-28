@@ -136,6 +136,13 @@ class Vec:
         else:
             return _libgauss.gauss_double_array_at(self._data, index)
 
+    def __setitem__(self, index, item):
+        if index >= self._len:
+            raise IndexError
+        else:
+            value = ctypes.c_double(item)
+            return _libgauss.gauss_set_double_array_at(self._data, index, value)
+
     def __add__(self, other):
         dst, b = _setup_binop(self, other)
         _libgauss.gauss_add_double_array(dst._data, self._data, b._data, len(self))
