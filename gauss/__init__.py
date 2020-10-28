@@ -87,7 +87,11 @@ def _setup_binop(self, other):
 
 
 def _alloc(nmemb):
-    return ctypes.c_void_p(_libgauss.gauss_simd_alloc(nmemb * 8))
+    ptr = ctypes.c_void_p(_libgauss.gauss_simd_alloc(nmemb * 8))
+    if not ptr:
+        raise MemoryError("gauss could not allocate memory")
+    else:
+        return ptr
 
 
 _number_types = (int, float)
