@@ -157,7 +157,9 @@ class Vec:
         dst, b = _setup_binop(self, other)
         if isinstance(b, _number_types):
             value = ctypes.c_double(b)
-            _libgauss.gauss_add_double_scalar(dst._data, self._data, value, len(self))
+            _libgauss.gauss_add_double_scalar(
+                dst._data, self._data, value, len(self)
+            )
         else:
             _libgauss.gauss_add_double_array(
                 dst._data, self._data, b._data, len(self)
@@ -168,7 +170,9 @@ class Vec:
         dst, b = _setup_binop(self, other)
         if isinstance(b, _number_types):
             value = ctypes.c_double(b)
-            _libgauss.gauss_sub_double_scalar(dst._data, self._data, value, len(self))
+            _libgauss.gauss_sub_double_scalar(
+                dst._data, self._data, value, len(self)
+            )
         else:
             _libgauss.gauss_sub_double_array(
                 dst._data, self._data, b._data, len(self)
@@ -179,7 +183,9 @@ class Vec:
         dst, b = _setup_binop(self, other)
         if isinstance(b, _number_types):
             value = ctypes.c_double(b)
-            _libgauss.gauss_floordiv_double_scalar(dst._data, self._data, value, len(self))
+            _libgauss.gauss_floordiv_double_scalar(
+                dst._data, self._data, value, len(self)
+            )
         else:
             _libgauss.gauss_floordiv_double_array(
                 dst._data, self._data, b._data, len(self)
@@ -190,7 +196,9 @@ class Vec:
         dst, b = _setup_binop(self, other)
         if isinstance(b, _number_types):
             value = ctypes.c_double(b)
-            _libgauss.gauss_div_double_scalar(dst._data, self._data, value, len(self))
+            _libgauss.gauss_div_double_scalar(
+                dst._data, self._data, value, len(self)
+            )
         else:
             _libgauss.gauss_div_double_array(
                 dst._data, self._data, b._data, len(self)
@@ -204,7 +212,9 @@ class Vec:
         dst, b = _setup_binop(self, other)
         if isinstance(b, _number_types):
             value = ctypes.c_double(b)
-            _libgauss.gauss_vec_scale_f64(dst._data, self._data, len(self), value)
+            _libgauss.gauss_vec_scale_f64(
+                dst._data, self._data, len(self), value
+            )
         else:
             _libgauss.gauss_mul_double_array(
                 dst._data, self._data, b._data, len(self)
@@ -258,6 +268,7 @@ class Vec:
 
     def mean(self):
         return _libgauss.gauss_mean_double_array(self._data, len(self))
+
 
 if __name__ == "__main__":
     pass
