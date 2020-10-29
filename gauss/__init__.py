@@ -70,7 +70,10 @@ def _iterable_to_list(iterable):
 
 def _setup_binop(self, other):
     if isinstance(other, _number_types):
-        raise ValueError("vector scaling not yet implemented")
+        size = len(self)
+        buf = _alloc(size)
+        dst = Vec(frompointer=(buf, size))
+        return dst, other
     elif isinstance(other, Vec):
         b = other
     else:
@@ -169,9 +172,13 @@ class Vec:
 
     def __mul__(self, other):
         dst, b = _setup_binop(self, other)
-        _libgauss.gauss_mul_double_array(
-            dst._data, self._data, b._data, len(self)
-        )
+        if isinstance(b, _number_types):
+            value = ctypes.c_double(b)
+            _libgauss.gauss_vec_scale_f64(dst._data, self._data, len(self), value)
+        else:
+            _libgauss.gauss_mul_double_array(
+                dst._data, self._data, b._data, len(self)
+            )
         return dst
 
     def dot(self, b):
