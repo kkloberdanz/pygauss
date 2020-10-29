@@ -13,9 +13,9 @@ def _load_libgauss():
 
 _libgauss = _load_libgauss()
 _libgauss.gauss_vec_dot_f64.restype = ctypes.c_double
-_libgauss.gauss_vec_norm_f64.restype = ctypes.c_double
+_libgauss.gauss_vec_l1norm_f64.restype = ctypes.c_double
+_libgauss.gauss_vec_l2norm_f64.restype = ctypes.c_double
 _libgauss.gauss_vec_sum_f64.restype = ctypes.c_double
-_libgauss.gauss_vec_sumabs_f64.restype = ctypes.c_double
 _libgauss.gauss_vec_index_max_f64.restype = ctypes.c_size_t
 _libgauss.gauss_simd_alloc.restype = ctypes.c_void_p
 _libgauss.gauss_double_array_at.restype = ctypes.c_double
@@ -78,9 +78,7 @@ def _setup_binop(self, other):
 
     size = len(b)
     if size != len(self):
-        s1 = len(self)
-        s2 = len(b)
-        msg = "vectors not alligned for add, {} != {}".format(s1, s2)
+        msg = "vectors not alligned for add, {} != {}".format(len(self), size)
         raise ValueError(msg)
     buf = _alloc(size)
     dst = Vec(frompointer=(buf, size))
@@ -195,10 +193,10 @@ class Vec:
         return result
 
     def l1norm(self):
-        return _libgauss.gauss_vec_sumabs_f64(self._data, len(self))
+        return _libgauss.gauss_vec_l1norm_f64(self._data, len(self))
 
     def l2norm(self):
-        return _libgauss.gauss_vec_norm_f64(self._data, len(self))
+        return _libgauss.gauss_vec_l2norm_f64(self._data, len(self))
 
     def norm(self):
         return self.l2norm()
