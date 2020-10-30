@@ -1,78 +1,14 @@
 import ctypes
-import os
-import atexit
+from . import core
 
 
-def _load_libgauss():
-    full_path = os.path.dirname(os.path.abspath(__file__))
-    lib_path = "{}/lib/libgauss.so".format(full_path)
-    lib = ctypes.cdll.LoadLibrary(lib_path)
-    lib.gauss_init()
-    return lib
-
-
-_libgauss = _load_libgauss()
-_libgauss.gauss_vec_dot_f64.restype = ctypes.c_double
-_libgauss.gauss_vec_l1norm_f64.restype = ctypes.c_double
-_libgauss.gauss_vec_l2norm_f64.restype = ctypes.c_double
-_libgauss.gauss_vec_sum_f64.restype = ctypes.c_double
-_libgauss.gauss_vec_index_max_f64.restype = ctypes.c_size_t
-_libgauss.gauss_simd_alloc.restype = ctypes.c_void_p
-_libgauss.gauss_double_array_at.restype = ctypes.c_double
-_libgauss.gauss_mean_double_array.restype = ctypes.c_double
-_libgauss.gauss_median_double_array.restype = ctypes.c_double
-
-
-def _exit_handler():
-    global _libgauss
-    _libgauss.gauss_close()
-
-
-atexit.register(_exit_handler)
-
-
-def _iterable_to_list(iterable):
-    if isinstance(iterable, list):
-        pylist = iterable
-    else:
-        pylist = list(iterable)
-    return pylist
-
-
-# def _load_vec_f64(pylist):
-#    c_array = (ctypes.c_double * len(pylist))(*pylist)
-#    return c_array
-#
-#
-# def _load_vec_f32(pylist):
-#    c_array = (ctypes.c_float * len(pylist))(*pylist)
-#    return c_array
-#
-#
-# def _load_vec_i32(pylist):
-#    c_array = (ctypes.c_int32 * len(pylist))(*pylist)
-#    return c_array
-#
-#
-# def _load_vec_i64(pylist):
-#    c_array = (ctypes.c_int64 * len(pylist))(*pylist)
-#    return c_array
-#
-#
-# def _load_vec_u32(pylist):
-#    c_array = (ctypes.c_uint32 * len(pylist))(*pylist)
-#    return c_array
-#
-#
-# def _load_vec_u64(pylist):
-#    c_array = (ctypes.c_uint64 * len(pylist))(*pylist)
-#    return c_array
+_number_types = (int, float)
 
 
 def _setup_binop(self, other):
     if isinstance(other, _number_types):
         size = len(self)
-        buf = _alloc(size)
+        buf = core._alloc(size)
         dst = Vec(frompointer=(buf, size))
         return dst, other
     elif isinstance(other, Vec):
@@ -84,20 +20,9 @@ def _setup_binop(self, other):
     if size != len(self):
         msg = "vectors not alligned for add, {} != {}".format(len(self), size)
         raise ValueError(msg)
-    buf = _alloc(size)
+    buf = core._alloc(size)
     dst = Vec(frompointer=(buf, size))
     return dst, b
-
-
-def _alloc(nmemb):
-    ptr = ctypes.c_void_p(_libgauss.gauss_simd_alloc(nmemb * 8))
-    if not ptr:
-        raise MemoryError("gauss could not allocate memory")
-    else:
-        return ptr
-
-
-_number_types = (int, float)
 
 
 class Vec:
@@ -105,12 +30,12 @@ class Vec:
         self._data = None
         if iterable is not None:
             # TODO: detect datatype and load it appropriately
-            pydata = _iterable_to_list(iterable)
+            pydata = core._iterable_to_list(iterable)
             self._len = len(pydata)
-            self._data = _alloc(self._len)
+            self._data = core._alloc(self._len)
             for i in range(self._len):
                 value = ctypes.c_double(pydata[i])
-                _libgauss.gauss_set_double_array_at(self._data, i, value)
+                core._libgauss.gauss_set_double_array_at(self._data, i, value)
         elif frompointer:
             ptr, nmemb = frompointer
             self._data = ptr
@@ -118,7 +43,7 @@ class Vec:
 
     def __del__(self):
         if self._data is not None:
-            _libgauss.gauss_free(self._data)
+            core._libgauss.gauss_free(self._data)
             self._data = None
 
     def __len__(self):
@@ -139,14 +64,14 @@ class Vec:
         if index >= self._len:
             raise StopIteration
         else:
-            return _libgauss.gauss_double_array_at(self._data, index)
+            return core._libgauss.gauss_double_array_at(self._data, index)
 
     def __setitem__(self, index, item):
         if index >= self._len:
             raise IndexError
         else:
             value = ctypes.c_double(item)
-            return _libgauss.gauss_set_double_array_at(
+            return core._libgauss.gauss_set_double_array_at(
                 self._data, index, value
             )
 
@@ -157,11 +82,11 @@ class Vec:
         dst, b = _setup_binop(self, other)
         if isinstance(b, _number_types):
             value = ctypes.c_double(b)
-            _libgauss.gauss_add_double_scalar(
+            core._libgauss.gauss_add_double_scalar(
                 dst._data, self._data, value, len(self)
             )
         else:
-            _libgauss.gauss_add_double_array(
+            core._libgauss.gauss_add_double_array(
                 dst._data, self._data, b._data, len(self)
             )
         return dst
@@ -170,11 +95,11 @@ class Vec:
         dst, b = _setup_binop(self, other)
         if isinstance(b, _number_types):
             value = ctypes.c_double(b)
-            _libgauss.gauss_sub_double_scalar(
+            core._libgauss.gauss_sub_double_scalar(
                 dst._data, self._data, value, len(self)
             )
         else:
-            _libgauss.gauss_sub_double_array(
+            core._libgauss.gauss_sub_double_array(
                 dst._data, self._data, b._data, len(self)
             )
         return dst
@@ -183,11 +108,11 @@ class Vec:
         dst, b = _setup_binop(self, other)
         if isinstance(b, _number_types):
             value = ctypes.c_double(b)
-            _libgauss.gauss_floordiv_double_scalar(
+            core._libgauss.gauss_floordiv_double_scalar(
                 dst._data, self._data, value, len(self)
             )
         else:
-            _libgauss.gauss_floordiv_double_array(
+            core._libgauss.gauss_floordiv_double_array(
                 dst._data, self._data, b._data, len(self)
             )
         return dst
@@ -196,11 +121,11 @@ class Vec:
         dst, b = _setup_binop(self, other)
         if isinstance(b, _number_types):
             value = ctypes.c_double(b)
-            _libgauss.gauss_div_double_scalar(
+            core._libgauss.gauss_div_double_scalar(
                 dst._data, self._data, value, len(self)
             )
         else:
-            _libgauss.gauss_div_double_array(
+            core._libgauss.gauss_div_double_array(
                 dst._data, self._data, b._data, len(self)
             )
         return dst
@@ -212,11 +137,11 @@ class Vec:
         dst, b = _setup_binop(self, other)
         if isinstance(b, _number_types):
             value = ctypes.c_double(b)
-            _libgauss.gauss_vec_scale_f64(
+            core._libgauss.gauss_vec_scale_f64(
                 dst._data, self._data, len(self), value
             )
         else:
-            _libgauss.gauss_mul_double_array(
+            core._libgauss.gauss_mul_double_array(
                 dst._data, self._data, b._data, len(self)
             )
         return dst
@@ -236,41 +161,47 @@ class Vec:
             b_vec = Vec(b)
 
         # TODO: detect datatype and call appropriate dot function
-        result = _libgauss.gauss_vec_dot_f64(self._data, b_vec._data, size)
+        result = core._libgauss.gauss_vec_dot_f64(self._data, b_vec._data, size)
         return result
 
     def l1norm(self):
-        return _libgauss.gauss_vec_l1norm_f64(self._data, len(self))
+        return core._libgauss.gauss_vec_l1norm_f64(self._data, len(self))
 
     def l2norm(self):
-        return _libgauss.gauss_vec_l2norm_f64(self._data, len(self))
+        return core._libgauss.gauss_vec_l2norm_f64(self._data, len(self))
 
     def norm(self):
         return self.l2norm()
 
     def sum(self):
-        return _libgauss.gauss_vec_sum_f64(self._data, len(self))
+        return core._libgauss.gauss_vec_sum_f64(self._data, len(self))
 
     def argmax(self):
-        return _libgauss.gauss_vec_index_max_f64(self._data, len(self))
+        return core._libgauss.gauss_vec_index_max_f64(self._data, len(self))
 
     def max(self):
         return self[self.argmax()]
 
     def sqrt(self):
-        ptr = _alloc(len(self))
+        ptr = core._alloc(len(self))
         dst = Vec(frompointer=(ptr, len(self)))
-        _libgauss.gauss_sqrt_double_array(dst._data, self._data, len(self))
+        core._libgauss.gauss_sqrt_double_array(dst._data, self._data, len(self))
         return dst
 
     def square(self):
         return self * self
 
     def mean(self):
-        return _libgauss.gauss_mean_double_array(self._data, len(self))
+        return core._libgauss.gauss_mean_double_array(self._data, len(self))
 
     def median(self):
-        return _libgauss.gauss_median_double_array(self._data, len(self))
+        return core._libgauss.gauss_median_double_array(self._data, len(self))
+
+    def variance(self):
+        return core._libgauss.gauss_variance_f64(self._data, len(self))
+
+    def standard_deviation(self):
+        return core._libgauss.gauss_standard_deviation_f64(self._data, len(self))
 
 
 if __name__ == "__main__":
