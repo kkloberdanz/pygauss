@@ -161,7 +161,9 @@ class Vec:
             b_vec = Vec(b)
 
         # TODO: detect datatype and call appropriate dot function
-        result = core._libgauss.gauss_vec_dot_f64(self._data, b_vec._data, size)
+        result = core._libgauss.gauss_vec_dot_f64(
+            self._data, b_vec._data, size
+        )
         return result
 
     def l1norm(self):
@@ -185,7 +187,9 @@ class Vec:
     def sqrt(self):
         ptr = core._alloc(len(self))
         dst = Vec(frompointer=(ptr, len(self)))
-        core._libgauss.gauss_sqrt_double_array(dst._data, self._data, len(self))
+        core._libgauss.gauss_sqrt_double_array(
+            dst._data, self._data, len(self)
+        )
         return dst
 
     def square(self):
@@ -201,7 +205,9 @@ class Vec:
         return core._libgauss.gauss_variance_f64(self._data, len(self))
 
     def standard_deviation(self):
-        return core._libgauss.gauss_standard_deviation_f64(self._data, len(self))
+        return core._libgauss.gauss_standard_deviation_f64(
+            self._data, len(self)
+        )
 
 
 if __name__ == "__main__":
