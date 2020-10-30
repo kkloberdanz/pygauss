@@ -20,12 +20,12 @@ _libgauss.gauss_vec_index_max_f64.restype = ctypes.c_size_t
 _libgauss.gauss_simd_alloc.restype = ctypes.c_void_p
 _libgauss.gauss_double_array_at.restype = ctypes.c_double
 _libgauss.gauss_mean_double_array.restype = ctypes.c_double
+_libgauss.gauss_median_double_array.restype = ctypes.c_double
 
 
 def _exit_handler():
-    # global _libgauss
-    # _libgauss.gauss_close()
-    pass
+    global _libgauss
+    _libgauss.gauss_close()
 
 
 atexit.register(_exit_handler)
@@ -251,11 +251,11 @@ class Vec:
     def sum(self):
         return _libgauss.gauss_vec_sum_f64(self._data, len(self))
 
-    def index_max(self):
+    def argmax(self):
         return _libgauss.gauss_vec_index_max_f64(self._data, len(self))
 
     def max(self):
-        return self[self.index_max()]
+        return self[self.argmax()]
 
     def sqrt(self):
         ptr = _alloc(len(self))
@@ -268,6 +268,9 @@ class Vec:
 
     def mean(self):
         return _libgauss.gauss_mean_double_array(self._data, len(self))
+
+    def median(self):
+        return _libgauss.gauss_median_double_array(self._data, len(self))
 
 
 if __name__ == "__main__":
