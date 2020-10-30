@@ -199,7 +199,12 @@ class Vec:
         return core._libgauss.gauss_mean_double_array(self._data, len(self))
 
     def median(self):
-        return core._libgauss.gauss_median_double_array(self._data, len(self))
+        scratch = core._alloc(len(self) * 8)
+        value = core._libgauss.gauss_median_double_array(
+            scratch, self._data, len(self)
+        )
+        core._libgauss.gauss_free(scratch)
+        return value
 
     def variance(self):
         return core._libgauss.gauss_variance_f64(self._data, len(self))
