@@ -8,3 +8,4 @@ dist/
 gauss.egg-info/
 venv/
 core
+_build/
