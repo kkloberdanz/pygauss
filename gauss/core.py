@@ -23,6 +23,7 @@ _libgauss.gauss_mean_double_array.restype = ctypes.c_double
 _libgauss.gauss_median_double_array.restype = ctypes.c_double
 _libgauss.gauss_variance_f64.restype = ctypes.c_double
 _libgauss.gauss_standard_deviation_f64.restype = ctypes.c_double
+_libgauss.ordinary_least_squares.restype = ctypes.c_int
 
 
 def _exit_handler():
