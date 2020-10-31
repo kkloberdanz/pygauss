@@ -33,6 +33,7 @@ class Vec:
     '''
     def __init__(self, iterable=None, dtype=None, frompointer=None):
         self._data = None
+        self._data32 = None
         if iterable is not None:
             # TODO: detect datatype and load it appropriately
             pydata = _core._iterable_to_list(iterable)
@@ -52,8 +53,10 @@ class Vec:
     def __del__(self):
         if self._data is not None:
             _core._libgauss.gauss_free(self._data)
-            _core._libgauss.gauss_free(self._data32)
             self._data = None
+        if self._data32 is not None:
+            _core._libgauss.gauss_free(self._data32)
+            self._data32 = None
 
     def __len__(self):
         return self._len
