@@ -38,9 +38,12 @@ class Vec:
             pydata = _core._iterable_to_list(iterable)
             self._len = len(pydata)
             self._data = _core._alloc(self._len)
+            self._data32 = _core._alloc(self._len)
             for i in range(self._len):
                 value = ctypes.c_double(pydata[i])
                 _core._libgauss.gauss_set_double_array_at(self._data, i, value)
+                _core._libgauss.gauss_set_float_array_at(self._data32, i, ctypes.c_float(pydata[i]))
+            self._opencl_mem = _core._libgauss.gauss_enqueue_gpu_memory(self._data32, self._len)
         elif frompointer:
             ptr, nmemb = frompointer
             self._data = ptr
@@ -49,6 +52,7 @@ class Vec:
     def __del__(self):
         if self._data is not None:
             _core._libgauss.gauss_free(self._data)
+            _core._libgauss.gauss_free(self._data32)
             self._data = None
 
     def __len__(self):
@@ -150,6 +154,27 @@ class Vec:
                 dst._data, self._data, b._data, len(self)
             )
         return dst
+
+    def dot32(self, b):
+        size = len(b)
+        if size <= 0:
+            raise ValueError("dot on empty vector")
+        if size != len(self):
+            msg = "vectors not alligned for dot product, {} != {}".format(
+                len(self), size
+            )
+            raise ValueError(msg)
+        b_vec = b
+        out = ctypes.c_float(0.0)
+        status_code = _core._libgauss.gauss_vec_dot_f32(
+            self._data32, b_vec._data32, size, ctypes.byref(out)
+        )
+        if status_code == 0:
+            return out.value
+        elif status_code == -1:
+            raise MemoryError("gauss failed to allocate memory for dot product")
+        else:
+            raise Exception("gauss failed perform dot product")
 
     def dot(self, b):
         """Calculate the dot product of self and vector b"""
