@@ -1,5 +1,5 @@
 import ctypes
-from . import core
+from . import _core
 
 
 _number_types = (int, float)
@@ -8,7 +8,7 @@ _number_types = (int, float)
 def _setup_binop(self, other):
     if isinstance(other, _number_types):
         size = len(self)
-        buf = core._alloc(size)
+        buf = _core._alloc(size)
         dst = Vec(frompointer=(buf, size))
         return dst, other
     elif isinstance(other, Vec):
@@ -20,7 +20,7 @@ def _setup_binop(self, other):
     if size != len(self):
         msg = "vectors not alligned for add, {} != {}".format(len(self), size)
         raise ValueError(msg)
-    buf = core._alloc(size)
+    buf = _core._alloc(size)
     dst = Vec(frompointer=(buf, size))
     return dst, b
 
@@ -35,12 +35,12 @@ class Vec:
         self._data = None
         if iterable is not None:
             # TODO: detect datatype and load it appropriately
-            pydata = core._iterable_to_list(iterable)
+            pydata = _core._iterable_to_list(iterable)
             self._len = len(pydata)
-            self._data = core._alloc(self._len)
+            self._data = _core._alloc(self._len)
             for i in range(self._len):
                 value = ctypes.c_double(pydata[i])
-                core._libgauss.gauss_set_double_array_at(self._data, i, value)
+                _core._libgauss.gauss_set_double_array_at(self._data, i, value)
         elif frompointer:
             ptr, nmemb = frompointer
             self._data = ptr
@@ -48,7 +48,7 @@ class Vec:
 
     def __del__(self):
         if self._data is not None:
-            core._libgauss.gauss_free(self._data)
+            _core._libgauss.gauss_free(self._data)
             self._data = None
 
     def __len__(self):
@@ -69,14 +69,14 @@ class Vec:
         if index >= self._len:
             raise StopIteration
         else:
-            return core._libgauss.gauss_double_array_at(self._data, index)
+            return _core._libgauss.gauss_double_array_at(self._data, index)
 
     def __setitem__(self, index, item):
         if index >= self._len:
             raise IndexError
         else:
             value = ctypes.c_double(item)
-            return core._libgauss.gauss_set_double_array_at(
+            return _core._libgauss.gauss_set_double_array_at(
                 self._data, index, value
             )
 
@@ -87,11 +87,11 @@ class Vec:
         dst, b = _setup_binop(self, other)
         if isinstance(b, _number_types):
             value = ctypes.c_double(b)
-            core._libgauss.gauss_add_double_scalar(
+            _core._libgauss.gauss_add_double_scalar(
                 dst._data, self._data, value, len(self)
             )
         else:
-            core._libgauss.gauss_add_double_array(
+            _core._libgauss.gauss_add_double_array(
                 dst._data, self._data, b._data, len(self)
             )
         return dst
@@ -100,11 +100,11 @@ class Vec:
         dst, b = _setup_binop(self, other)
         if isinstance(b, _number_types):
             value = ctypes.c_double(b)
-            core._libgauss.gauss_sub_double_scalar(
+            _core._libgauss.gauss_sub_double_scalar(
                 dst._data, self._data, value, len(self)
             )
         else:
-            core._libgauss.gauss_sub_double_array(
+            _core._libgauss.gauss_sub_double_array(
                 dst._data, self._data, b._data, len(self)
             )
         return dst
@@ -113,11 +113,11 @@ class Vec:
         dst, b = _setup_binop(self, other)
         if isinstance(b, _number_types):
             value = ctypes.c_double(b)
-            core._libgauss.gauss_floordiv_double_scalar(
+            _core._libgauss.gauss_floordiv_double_scalar(
                 dst._data, self._data, value, len(self)
             )
         else:
-            core._libgauss.gauss_floordiv_double_array(
+            _core._libgauss.gauss_floordiv_double_array(
                 dst._data, self._data, b._data, len(self)
             )
         return dst
@@ -126,11 +126,11 @@ class Vec:
         dst, b = _setup_binop(self, other)
         if isinstance(b, _number_types):
             value = ctypes.c_double(b)
-            core._libgauss.gauss_div_double_scalar(
+            _core._libgauss.gauss_div_double_scalar(
                 dst._data, self._data, value, len(self)
             )
         else:
-            core._libgauss.gauss_div_double_array(
+            _core._libgauss.gauss_div_double_array(
                 dst._data, self._data, b._data, len(self)
             )
         return dst
@@ -142,11 +142,11 @@ class Vec:
         dst, b = _setup_binop(self, other)
         if isinstance(b, _number_types):
             value = ctypes.c_double(b)
-            core._libgauss.gauss_vec_scale_f64(
+            _core._libgauss.gauss_vec_scale_f64(
                 dst._data, self._data, len(self), value
             )
         else:
-            core._libgauss.gauss_mul_double_array(
+            _core._libgauss.gauss_mul_double_array(
                 dst._data, self._data, b._data, len(self)
             )
         return dst
@@ -168,7 +168,7 @@ class Vec:
             b_vec = Vec(b)
 
         # TODO: detect datatype and call appropriate dot function
-        result = core._libgauss.gauss_vec_dot_f64(
+        result = _core._libgauss.gauss_vec_dot_f64(
             self._data, b_vec._data, size
         )
         return result
@@ -177,13 +177,13 @@ class Vec:
         '''L1 norm, equivalent to sum of the absolute values of the vector'''
         if len(self) <= 0:
             raise ValueError("l1norm on empty vector")
-        return core._libgauss.gauss_vec_l1norm_f64(self._data, len(self))
+        return _core._libgauss.gauss_vec_l1norm_f64(self._data, len(self))
 
     def l2norm(self):
         '''L2 norm, also known as euclidean distance'''
         if len(self) <= 0:
             raise ValueError("l2norm on empty vector")
-        return core._libgauss.gauss_vec_l2norm_f64(self._data, len(self))
+        return _core._libgauss.gauss_vec_l2norm_f64(self._data, len(self))
 
     def norm(self):
         '''Alias for L2 norm, also known as euclidean distance'''
@@ -195,13 +195,13 @@ class Vec:
         '''Sum of elements'''
         if len(self) <= 0:
             raise ValueError("sum on empty vector")
-        return core._libgauss.gauss_vec_sum_f64(self._data, len(self))
+        return _core._libgauss.gauss_vec_sum_f64(self._data, len(self))
 
     def argmax(self):
         '''Index of the maximum element'''
         if len(self) <= 0:
             raise ValueError("argmax on empty vector")
-        return core._libgauss.gauss_vec_index_max_f64(self._data, len(self))
+        return _core._libgauss.gauss_vec_index_max_f64(self._data, len(self))
 
     def max(self):
         '''Maximum element'''
@@ -213,13 +213,13 @@ class Vec:
         '''Minimum element'''
         if len(self) <= 0:
             raise ValueError("min on empty vector")
-        return core._libgauss.gauss_min_vec_f64(self._data, len(self))
+        return _core._libgauss.gauss_min_vec_f64(self._data, len(self))
 
     def sqrt(self):
         '''Element by element square root'''
-        ptr = core._alloc(len(self))
+        ptr = _core._alloc(len(self))
         dst = Vec(frompointer=(ptr, len(self)))
-        core._libgauss.gauss_sqrt_double_array(
+        _core._libgauss.gauss_sqrt_double_array(
             dst._data, self._data, len(self)
         )
         return dst
@@ -232,30 +232,30 @@ class Vec:
         '''Mean of vector'''
         if len(self) <= 0:
             raise ValueError("mean on empty vector")
-        return core._libgauss.gauss_mean_double_array(self._data, len(self))
+        return _core._libgauss.gauss_mean_double_array(self._data, len(self))
 
     def median(self):
         '''Median of vector'''
         if len(self) <= 0:
             raise ValueError("median on empty vector")
-        scratch = core._alloc(len(self) * 8)
-        value = core._libgauss.gauss_median_double_array(
+        scratch = _core._alloc(len(self) * 8)
+        value = _core._libgauss.gauss_median_double_array(
             scratch, self._data, len(self)
         )
-        core._libgauss.gauss_free(scratch)
+        _core._libgauss.gauss_free(scratch)
         return value
 
     def variance(self):
         '''Variance of vector'''
         if len(self) <= 0:
             raise ValueError("varience on empty vector")
-        return core._libgauss.gauss_variance_f64(self._data, len(self))
+        return _core._libgauss.gauss_variance_f64(self._data, len(self))
 
     def standard_deviation(self):
         '''Standard deviation of vector'''
         if len(self) <= 0:
             raise ValueError("standard_deviation on empty vector")
-        return core._libgauss.gauss_standard_deviation_f64(
+        return _core._libgauss.gauss_standard_deviation_f64(
             self._data, len(self)
         )
 
