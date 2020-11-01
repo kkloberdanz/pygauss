@@ -10,7 +10,7 @@ a = gauss.Vec(range(10))
 
 b = gauss.Vec(range(10))
 
-print(a.dot32(b))
+print(a.dot_cl(b))
 assert(gauss.estimator.ordinary_least_squares(x, y) == (1.0, 2.0))
 
 a = gauss.Vec([9.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0])

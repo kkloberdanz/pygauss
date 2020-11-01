@@ -33,18 +33,18 @@ class Vec:
     '''
     def __init__(self, iterable=None, dtype=None, frompointer=None):
         self._data = None
-        self._data32 = None
+        self._data_clfloat = None
         if iterable is not None:
             # TODO: detect datatype and load it appropriately
             pydata = _core._iterable_to_list(iterable)
             self._len = len(pydata)
             self._data = _core._alloc(self._len)
-            self._data32 = _core._alloc(self._len)
+            self._data_clfloat = _core._alloc(self._len)
             for i in range(self._len):
                 value = ctypes.c_double(pydata[i])
                 _core._libgauss.gauss_set_double_array_at(self._data, i, value)
-                _core._libgauss.gauss_set_float_array_at(self._data32, i, ctypes.c_float(pydata[i]))
-            self._opencl_mem = _core._libgauss.gauss_enqueue_gpu_memory(self._data32, self._len)
+                _core._libgauss.gauss_set_float_array_at(self._data_clfloat, i, ctypes.c_float(pydata[i]))
+            self._opencl_mem = _core._libgauss.gauss_enqueue_gpu_memory(self._data_clfloat, self._len)
         elif frompointer:
             ptr, nmemb = frompointer
             self._data = ptr
@@ -54,9 +54,9 @@ class Vec:
         if self._data is not None:
             _core._libgauss.gauss_free(self._data)
             self._data = None
-        if self._data32 is not None:
-            _core._libgauss.gauss_free(self._data32)
-            self._data32 = None
+        if self._data_clfloat is not None:
+            _core._libgauss.gauss_free(self._data_clfloat)
+            self._data_clfloat = None
 
     def __len__(self):
         return self._len
@@ -158,7 +158,7 @@ class Vec:
             )
         return dst
 
-    def dot32(self, b):
+    def dot_cl(self, b):
         size = len(b)
         if size <= 0:
             raise ValueError("dot on empty vector")
@@ -169,8 +169,8 @@ class Vec:
             raise ValueError(msg)
         b_vec = b
         out = ctypes.c_float(0.0)
-        status_code = _core._libgauss.gauss_vec_dot_f32(
-            self._data32, b_vec._data32, size, ctypes.byref(out)
+        status_code = _core._libgauss.gauss_vec_dot_cl_float(
+            self._data_clfloat, b_vec._data_clfloat, size, ctypes.byref(out)
         )
         if status_code == 0:
             return out.value
