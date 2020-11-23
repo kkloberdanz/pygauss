@@ -195,7 +195,7 @@ class Vec:
 
         result = ctypes.c_float(0.0)
         err = _core._libgauss.gauss_vec_dot(
-            self._data, b_vec._data, size, ctypes.byref(result)
+            self._data, b_vec._data, ctypes.byref(result)
         )
         return result.value
 
