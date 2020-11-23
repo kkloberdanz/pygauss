@@ -39,12 +39,10 @@ class Vec:
             pydata = _core._iterable_to_list(iterable)
             self._len = len(pydata)
             self._data = _core._alloc(self._len)
-            self._data_clfloat = _core._alloc(self._len)
-            for i in range(self._len):
-                value = ctypes.c_double(pydata[i])
-                _core._libgauss.gauss_set_double_array_at(self._data, i, value)
-                _core._libgauss.gauss_set_float_array_at(self._data_clfloat, i, ctypes.c_float(pydata[i]))
-            self._opencl_mem = _core._libgauss.gauss_enqueue_gpu_memory(self._data_clfloat, self._len)
+            buf = (ctypes.c_float * self._len)(*pydata)
+            err = _core._libgauss.gauss_set_buffer(self._data, buf)
+            if err != 0:
+                raise Exception("failed to set gauss buffer")
         elif frompointer:
             ptr, nmemb = frompointer
             self._data = ptr
@@ -52,10 +50,10 @@ class Vec:
 
     def __del__(self):
         if self._data is not None:
-            _core._libgauss.gauss_free(self._data)
+            _core._free(self._data)
             self._data = None
         if self._data_clfloat is not None:
-            _core._libgauss.gauss_free(self._data_clfloat)
+            _core._free(self._data_clfloat)
             self._data_clfloat = None
 
     def __len__(self):
@@ -195,11 +193,11 @@ class Vec:
         else:
             b_vec = Vec(b)
 
-        # TODO: detect datatype and call appropriate dot function
-        result = _core._libgauss.gauss_vec_dot_f64(
-            self._data, b_vec._data, size
+        result = ctypes.c_float(0.0)
+        err = _core._libgauss.gauss_vec_dot(
+            self._data, b_vec._data, size, ctypes.byref(result)
         )
-        return result
+        return result.value
 
     def l1norm(self):
         '''L1 norm, equivalent to sum of the absolute values of the vector'''

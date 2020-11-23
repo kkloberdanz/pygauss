@@ -17,7 +17,7 @@ _libgauss.gauss_vec_l1norm_f64.restype = ctypes.c_double
 _libgauss.gauss_vec_l2norm_f64.restype = ctypes.c_double
 _libgauss.gauss_vec_sum_f64.restype = ctypes.c_double
 _libgauss.gauss_vec_index_max_f64.restype = ctypes.c_size_t
-_libgauss.gauss_simd_alloc.restype = ctypes.c_void_p
+_libgauss.gauss_alloc.restype = ctypes.c_void_p
 _libgauss.gauss_double_array_at.restype = ctypes.c_double
 _libgauss.gauss_mean_double_array.restype = ctypes.c_double
 _libgauss.gauss_median_double_array.restype = ctypes.c_double
@@ -43,9 +43,22 @@ def _iterable_to_list(iterable):
     return pylist
 
 
-def _alloc(nmemb):
-    ptr = ctypes.c_void_p(_libgauss.gauss_simd_alloc(nmemb * 8))
+_prefered_dtype = 'cl_float'
+
+_dtype_to_gauss_type = {
+    'float': 1,
+    'double': 2,
+    'cl_float': 3,
+}
+
+
+def _alloc(nmemb, dtype=_prefered_dtype):
+    kind = _dtype_to_gauss_type[dtype]
+    ptr = ctypes.c_void_p(_libgauss.gauss_alloc(nmemb, kind))
     if not ptr:
         raise MemoryError("gauss could not allocate memory")
     else:
         return ptr
+
+def _free(ptr):
+    _libgauss.gauss_free(ptr)
