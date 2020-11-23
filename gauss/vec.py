@@ -33,10 +33,11 @@ class Vec:
     '''
     def __init__(self, iterable=None, dtype=None, frompointer=None):
         self._data = None
-        self._data_clfloat = None
+        self._pydata = []
         if iterable is not None:
             # TODO: detect datatype and load it appropriately
             pydata = _core._iterable_to_list(iterable)
+            self._pydata = pydata
             self._len = len(pydata)
             self._data = _core._alloc(self._len)
             buf = (ctypes.c_float * self._len)(*pydata)
@@ -52,9 +53,6 @@ class Vec:
         if self._data is not None:
             _core._free(self._data)
             self._data = None
-        if self._data_clfloat is not None:
-            _core._free(self._data_clfloat)
-            self._data_clfloat = None
 
     def __len__(self):
         return self._len
@@ -74,16 +72,16 @@ class Vec:
         if index >= self._len:
             raise StopIteration
         else:
-            return _core._libgauss.gauss_double_array_at(self._data, index)
+            return self._pydata[index]
 
-    def __setitem__(self, index, item):
-        if index >= self._len:
-            raise IndexError
-        else:
-            value = ctypes.c_double(item)
-            return _core._libgauss.gauss_set_double_array_at(
-                self._data, index, value
-            )
+#    def __setitem__(self, index, item):
+#        if index >= self._len:
+#            raise IndexError
+#        else:
+#            value = ctypes.c_double(item)
+#            return _core._libgauss.gauss_set_double_array_at(
+#                self._data, index, value
+#            )
 
     def __radd__(self, other):
         return self + other
