@@ -3,7 +3,7 @@ from . import _core
 
 
 def ordinary_least_squares(x, y):
-    '''
+    """
     Ordinary Least Squares
 
     Uses optimized C implimentation. Results should be equivalent to the
@@ -16,10 +16,10 @@ def ordinary_least_squares(x, y):
              ((x - mean_x).square()).sum())
         b = mean_y - m * mean_x
         return m, b
-    '''
+    """
     lx = len(x)
     ly = len(y)
-    if (lx != ly):
+    if lx != ly:
         msg = "x and y vectors are not aligned: {} != {}".format(lx, ly)
         raise ValueError(msg)
 

@@ -26,11 +26,12 @@ def _setup_binop(self, other):
 
 
 class Vec:
-    '''
+    """
     Gauss Vector
 
     Uses optimized native code on backend
-    '''
+    """
+
     def __init__(self, iterable=None, dtype=None, frompointer=None):
         self._data = None
         self._pydata = []
@@ -74,14 +75,14 @@ class Vec:
         else:
             return self._pydata[index]
 
-#    def __setitem__(self, index, item):
-#        if index >= self._len:
-#            raise IndexError
-#        else:
-#            value = ctypes.c_double(item)
-#            return _core._libgauss.gauss_set_double_array_at(
-#                self._data, index, value
-#            )
+    #    def __setitem__(self, index, item):
+    #        if index >= self._len:
+    #            raise IndexError
+    #        else:
+    #            value = ctypes.c_double(item)
+    #            return _core._libgauss.gauss_set_double_array_at(
+    #                self._data, index, value
+    #            )
 
     def __radd__(self, other):
         return self + other
@@ -154,27 +155,6 @@ class Vec:
             )
         return dst
 
-    def dot_cl(self, b):
-        size = len(b)
-        if size <= 0:
-            raise ValueError("dot on empty vector")
-        if size != len(self):
-            msg = "vectors not alligned for dot product, {} != {}".format(
-                len(self), size
-            )
-            raise ValueError(msg)
-        b_vec = b
-        out = ctypes.c_float(0.0)
-        status_code = _core._libgauss.gauss_vec_dot_cl_float(
-            self._data_clfloat, b_vec._data_clfloat, size, ctypes.byref(out)
-        )
-        if status_code == 0:
-            return out.value
-        elif status_code == -1:
-            raise MemoryError("gauss failed to allocate memory for dot product")
-        else:
-            raise Exception("gauss failed perform dot product")
-
     def dot(self, b):
         """Calculate the dot product of self and vector b"""
         size = len(b)
@@ -198,49 +178,49 @@ class Vec:
         return result.value
 
     def l1norm(self):
-        '''L1 norm, equivalent to sum of the absolute values of the vector'''
+        """L1 norm, equivalent to sum of the absolute values of the vector"""
         if len(self) <= 0:
             raise ValueError("l1norm on empty vector")
         return _core._libgauss.gauss_vec_l1norm_f64(self._data, len(self))
 
     def l2norm(self):
-        '''L2 norm, also known as euclidean distance'''
+        """L2 norm, also known as euclidean distance"""
         if len(self) <= 0:
             raise ValueError("l2norm on empty vector")
         return _core._libgauss.gauss_vec_l2norm_f64(self._data, len(self))
 
     def norm(self):
-        '''Alias for L2 norm, also known as euclidean distance'''
+        """Alias for L2 norm, also known as euclidean distance"""
         if len(self) <= 0:
             raise ValueError("norm on empty vector")
         return self.l2norm()
 
     def sum(self):
-        '''Sum of elements'''
+        """Sum of elements"""
         if len(self) <= 0:
             raise ValueError("sum on empty vector")
         return _core._libgauss.gauss_vec_sum_f64(self._data, len(self))
 
     def argmax(self):
-        '''Index of the maximum element'''
+        """Index of the maximum element"""
         if len(self) <= 0:
             raise ValueError("argmax on empty vector")
         return _core._libgauss.gauss_vec_index_max_f64(self._data, len(self))
 
     def max(self):
-        '''Maximum element'''
+        """Maximum element"""
         if len(self) <= 0:
             raise ValueError("max on empty vector")
         return self[self.argmax()]
 
     def min(self):
-        '''Minimum element'''
+        """Minimum element"""
         if len(self) <= 0:
             raise ValueError("min on empty vector")
         return _core._libgauss.gauss_min_vec_f64(self._data, len(self))
 
     def sqrt(self):
-        '''Element by element square root'''
+        """Element by element square root"""
         ptr = _core._alloc(len(self))
         dst = Vec(frompointer=(ptr, len(self)))
         _core._libgauss.gauss_sqrt_double_array(
@@ -249,17 +229,17 @@ class Vec:
         return dst
 
     def square(self):
-        '''Element by element square'''
+        """Element by element square"""
         return self * self
 
     def mean(self):
-        '''Mean of vector'''
+        """Mean of vector"""
         if len(self) <= 0:
             raise ValueError("mean on empty vector")
         return _core._libgauss.gauss_mean_double_array(self._data, len(self))
 
     def median(self):
-        '''Median of vector'''
+        """Median of vector"""
         if len(self) <= 0:
             raise ValueError("median on empty vector")
         scratch = _core._alloc(len(self) * 8)
@@ -270,13 +250,13 @@ class Vec:
         return value
 
     def variance(self):
-        '''Variance of vector'''
+        """Variance of vector"""
         if len(self) <= 0:
             raise ValueError("varience on empty vector")
         return _core._libgauss.gauss_variance_f64(self._data, len(self))
 
     def standard_deviation(self):
-        '''Standard deviation of vector'''
+        """Standard deviation of vector"""
         if len(self) <= 0:
             raise ValueError("standard_deviation on empty vector")
         return _core._libgauss.gauss_standard_deviation_f64(
