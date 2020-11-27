@@ -42,16 +42,16 @@ def _iterable_to_list(iterable):
     return pylist
 
 
-_prefered_dtype = "cl_float"
-
 _dtype_to_gauss_type = {
+    "prefered": -1,
     "float": 1,
     "double": 2,
     "cl_float": 3,
 }
 
 
-def _alloc(nmemb, dtype=_prefered_dtype):
+#def _alloc(nmemb, dtype="prefered"):
+def _alloc(nmemb, dtype="double"):
     kind = _dtype_to_gauss_type[dtype]
     ptr = ctypes.c_void_p(_libgauss.gauss_alloc(nmemb, kind))
     if not ptr:
