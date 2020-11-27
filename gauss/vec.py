@@ -35,12 +35,13 @@ class Vec:
     def __init__(self, iterable=None, dtype=None, frompointer=None):
         self._data = None
         self._pydata = []
+        self._dtype = dtype if dtype is not None else "prefered"
         if iterable is not None:
             # TODO: detect datatype and load it appropriately
             pydata = _core._iterable_to_list(iterable)
             self._pydata = pydata
             self._len = len(pydata)
-            self._data = _core._alloc(self._len)
+            self._data = _core._alloc(self._len, self._dtype)
             buf = (ctypes.c_float * self._len)(*pydata)
             err = _core._libgauss.gauss_set_buffer(self._data, buf)
             if err != 0:
@@ -49,6 +50,9 @@ class Vec:
             ptr, nmemb = frompointer
             self._data = ptr
             self._len = nmemb
+
+    def _get_ctype(self):
+        return
 
     def __del__(self):
         if self._data is not None:
@@ -187,7 +191,8 @@ class Vec:
 
     def l2norm(self):
         """L2 norm, also known as euclidean distance"""
-        result = ctypes.c_float(4.2)
+        ctype = _core._get_ctype(self._data)
+        result = ctype(4.2)
         err = _core._libgauss.gauss_vec_l2norm(
             self._data, ctypes.byref(result)
         )

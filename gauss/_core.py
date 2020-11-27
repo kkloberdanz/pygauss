@@ -24,6 +24,7 @@ _libgauss.gauss_variance_f64.restype = ctypes.c_double
 _libgauss.gauss_standard_deviation_f64.restype = ctypes.c_double
 _libgauss.ordinary_least_squares.restype = ctypes.c_int
 _libgauss.gauss_min_vec_f64.restype = ctypes.c_double
+_libgauss.gauss_get_dtype.restype = ctypes.c_char_p
 
 
 def _exit_handler():
@@ -49,8 +50,13 @@ _dtype_to_gauss_type = {
     "cl_float": 3,
 }
 
+_dtype_to_ctype = {
+    "double": ctypes.c_double,
+    "float": ctypes.c_float,
+    "cl_float": ctypes.c_float,
+}
 
-#def _alloc(nmemb, dtype="prefered"):
+
 def _alloc(nmemb, dtype="double"):
     kind = _dtype_to_gauss_type[dtype]
     ptr = ctypes.c_void_p(_libgauss.gauss_alloc(nmemb, kind))
@@ -62,3 +68,7 @@ def _alloc(nmemb, dtype="double"):
 
 def _free(ptr):
     _libgauss.gauss_free(ptr)
+
+
+def _get_ctype(obj):
+    return _dtype_to_ctype[_libgauss.gauss_get_dtype(obj).decode()]
