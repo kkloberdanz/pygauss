@@ -51,9 +51,6 @@ class Vec:
             self._data = ptr
             self._len = nmemb
 
-    def _get_ctype(self):
-        return
-
     def __del__(self):
         if self._data is not None:
             _core._free(self._data)
@@ -180,7 +177,7 @@ class Vec:
             self._data, b_vec._data, ctypes.byref(result)
         )
         if err != 0:
-            raise Exception("error calculating dot product")
+            raise Exception("error calculating dot product: {}".format(_core._error_to_string(err)))
         return result.value
 
     def l1norm(self):

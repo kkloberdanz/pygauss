@@ -25,6 +25,7 @@ _libgauss.gauss_standard_deviation_f64.restype = ctypes.c_double
 _libgauss.ordinary_least_squares.restype = ctypes.c_int
 _libgauss.gauss_min_vec_f64.restype = ctypes.c_double
 _libgauss.gauss_get_dtype.restype = ctypes.c_char_p
+_libgauss.gauss_error_to_string.restype = ctypes.c_char_p
 
 
 def _exit_handler():
@@ -72,3 +73,6 @@ def _free(ptr):
 
 def _get_ctype(obj):
     return _dtype_to_ctype[_libgauss.gauss_get_dtype(obj).decode()]
+
+def _error_to_string(e):
+    return _libgauss.gauss_error_to_string(e).decode()
