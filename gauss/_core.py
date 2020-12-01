@@ -74,5 +74,6 @@ def _free(ptr):
 def _get_ctype(obj):
     return _dtype_to_ctype[_libgauss.gauss_get_dtype(obj).decode()]
 
+
 def _error_to_string(e):
     return _libgauss.gauss_error_to_string(e).decode()

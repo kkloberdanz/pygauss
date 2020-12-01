@@ -183,7 +183,11 @@ class Vec:
             self._data, b_vec._data, ctypes.byref(result)
         )
         if err != 0:
-            raise Exception("error calculating dot product: {}".format(_core._error_to_string(err)))
+            raise Exception(
+                "error calculating dot product: {}".format(
+                    _core._error_to_string(err)
+                )
+            )
         return result.value
 
     def l1norm(self):
@@ -194,7 +198,9 @@ class Vec:
             result = ctypes.c_float(0.0)
         else:
             result = ctypes.c_double(0.0)
-        err = _core._libgauss.gauss_vec_l1norm(self._data, ctypes.byref(result))
+        err = _core._libgauss.gauss_vec_l1norm(
+            self._data, ctypes.byref(result)
+        )
         if err != 0:
             raise Exception("error calculating l1norm")
         return result.value
@@ -212,8 +218,6 @@ class Vec:
 
     def norm(self):
         """Alias for L2 norm, also known as euclidean distance"""
-        if len(self) <= 0:
-            raise ValueError("norm on empty vector")
         return self.l2norm()
 
     def sum(self):
