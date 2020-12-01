@@ -249,11 +249,20 @@ class Vec:
             raise ValueError("max on empty vector")
         return self[self.argmax()]
 
+    def argmin(self):
+        if len(self) <= 0:
+            raise ValueError("argmin on empty vector")
+        result = ctypes.c_size_t(0)
+        err = _core._libgauss.gauss_vec_argmin(self._data, ctypes.byref(result))
+        if err != 0:
+            raise Exception("error calculating argmin")
+        return result.value
+
     def min(self):
         """Minimum element"""
         if len(self) <= 0:
             raise ValueError("min on empty vector")
-        return _core._libgauss.gauss_min_vec_f64(self._data, len(self))
+        return self[self.argmin()]
 
     def sqrt(self):
         """Element by element square root"""
@@ -272,7 +281,21 @@ class Vec:
         """Mean of vector"""
         if len(self) <= 0:
             raise ValueError("mean on empty vector")
-        return _core._libgauss.gauss_mean_double_array(self._data, len(self))
+
+        if self._dtype in {"float", "cl_float"}:
+            result = ctypes.c_float(0.0)
+        else:
+            result = ctypes.c_double(0.0)
+        err = _core._libgauss.gauss_vec_mean(
+            self._data, ctypes.byref(result)
+        )
+        if err != 0:
+            raise Exception(
+                "error calculating mean: {}".format(
+                    _core._error_to_string(err)
+                )
+            )
+        return result.value
 
     def median(self):
         """Median of vector"""
@@ -290,14 +313,6 @@ class Vec:
         if len(self) <= 0:
             raise ValueError("varience on empty vector")
         return _core._libgauss.gauss_variance_f64(self._data, len(self))
-
-    def standard_deviation(self):
-        """Standard deviation of vector"""
-        if len(self) <= 0:
-            raise ValueError("standard_deviation on empty vector")
-        return _core._libgauss.gauss_standard_deviation_f64(
-            self._data, len(self)
-        )
 
 
 if __name__ == "__main__":

@@ -18,12 +18,7 @@ _libgauss.gauss_vec_l2norm_f64.restype = ctypes.c_double
 _libgauss.gauss_vec_sum_f64.restype = ctypes.c_double
 _libgauss.gauss_vec_index_max_f64.restype = ctypes.c_size_t
 _libgauss.gauss_alloc.restype = ctypes.c_void_p
-_libgauss.gauss_mean_double_array.restype = ctypes.c_double
 _libgauss.gauss_median_double_array.restype = ctypes.c_double
-_libgauss.gauss_variance_f64.restype = ctypes.c_double
-_libgauss.gauss_standard_deviation_f64.restype = ctypes.c_double
-_libgauss.ordinary_least_squares.restype = ctypes.c_int
-_libgauss.gauss_min_vec_f64.restype = ctypes.c_double
 _libgauss.gauss_get_dtype.restype = ctypes.c_char_p
 _libgauss.gauss_error_to_string.restype = ctypes.c_char_p
 

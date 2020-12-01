@@ -37,4 +37,8 @@ m = b.argmax()
 print(m)
 assert(m == 9)
 
+m = a.argmin()
+print(m)
+assert(m == 1)
+
 print('OK')
