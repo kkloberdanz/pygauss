@@ -29,4 +29,8 @@ b = gauss.Vec([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0])
 #assert(gauss.error.mean_squared_error(a, b) == 7.3)
 #assert(7.3 == (a - b).square().sum() / len(a))
 
+nrm = str(a.l2norm())[:6]
+print(nrm)
+assert(nrm == "19.131")
+
 print('OK')
