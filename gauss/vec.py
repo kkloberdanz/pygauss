@@ -312,7 +312,21 @@ class Vec:
         """Variance of vector"""
         if len(self) <= 0:
             raise ValueError("varience on empty vector")
-        return _core._libgauss.gauss_variance_f64(self._data, len(self))
+
+        if self._dtype in {"float", "cl_float"}:
+            result = ctypes.c_float(0.0)
+        else:
+            result = ctypes.c_double(0.0)
+        err = _core._libgauss.gauss_vec_variance(
+            self._data, ctypes.byref(result)
+        )
+        if err != 0:
+            raise Exception(
+                "error calculating varience: {}".format(
+                    _core._error_to_string(err)
+                )
+            )
+        return result.value
 
 
 if __name__ == "__main__":

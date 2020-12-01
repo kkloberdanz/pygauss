@@ -41,4 +41,8 @@ m = a.argmin()
 print(m)
 assert(m == 1)
 
+v = str(a.variance())[:4]
+print(v)
+assert(v == '7.44')
+
 print('OK')
