@@ -237,7 +237,11 @@ class Vec:
         """Index of the maximum element"""
         if len(self) <= 0:
             raise ValueError("argmax on empty vector")
-        return _core._libgauss.gauss_vec_index_max_f64(self._data, len(self))
+        result = ctypes.c_size_t(0)
+        err = _core._libgauss.gauss_vec_argmax(self._data, ctypes.byref(result))
+        if err != 0:
+            raise Exception("error calculating argmax")
+        return result.value
 
     def max(self):
         """Maximum element"""

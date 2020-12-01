@@ -33,4 +33,8 @@ nrm = str(a.l2norm())[:6]
 print(nrm)
 assert(nrm == "19.131")
 
+m = b.argmax()
+print(m)
+assert(m == 9)
+
 print('OK')
