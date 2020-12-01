@@ -42,7 +42,10 @@ class Vec:
             self._pydata = pydata
             self._len = len(pydata)
             self._data = _core._alloc(self._len, self._dtype)
-            buf = (ctypes.c_float * self._len)(*pydata)
+            if dtype in {"float", "cl_float"}:
+                buf = (ctypes.c_float * self._len)(*pydata)
+            else:
+                buf = (ctypes.c_double * self._len)(*pydata)
             err = _core._libgauss.gauss_set_buffer(self._data, buf)
             if err != 0:
                 raise Exception("failed to set gauss buffer")
@@ -172,7 +175,10 @@ class Vec:
         else:
             b_vec = Vec(b)
 
-        result = ctypes.c_float(0.0)
+        if self._dtype in {"float", "cl_float"}:
+            result = ctypes.c_float(0.0)
+        else:
+            result = ctypes.c_double(0.0)
         err = _core._libgauss.gauss_vec_dot(
             self._data, b_vec._data, ctypes.byref(result)
         )
@@ -207,7 +213,14 @@ class Vec:
         """Sum of elements"""
         if len(self) <= 0:
             raise ValueError("sum on empty vector")
-        return _core._libgauss.gauss_vec_sum_f64(self._data, len(self))
+        if self._dtype in {"float", "cl_float"}:
+            result = ctypes.c_float(0.0)
+        else:
+            result = ctypes.c_double(0.0)
+        err = _core._libgauss.gauss_vec_sum(self._data, ctypes.byref(result))
+        if err != 0:
+            raise Exception("error calculating sum")
+        return result.value
 
     def argmax(self):
         """Index of the maximum element"""

@@ -1,4 +1,10 @@
 import gauss
+
+a = gauss.Vec(range(100))
+s = a.sum()
+print(s)
+assert(s == 4950.0)
+
 a = gauss.Vec([1,2,3])
 ans = a.dot([4,5,6])
 
@@ -10,7 +16,6 @@ a = gauss.Vec(range(10))
 
 b = gauss.Vec(range(10))
 
-print(a.dot_cl(b))
 assert(gauss.estimator.ordinary_least_squares(x, y) == (1.0, 2.0))
 
 a = gauss.Vec([9.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0])
