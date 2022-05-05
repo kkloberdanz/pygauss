@@ -28,8 +28,8 @@ and functions that return vectors have not yet been implemented, however the
 following methods below still work, and dot products are now being done on the
 GPU using OpenCL.
 
-Most of the compute is done in either OpenCL or OpenBLAS, but some algorithms
-have been hand implemented using SIMD intrinsics.
+Most of the compute is done in OpenCL using clBLAS, but some algorithms
+have been hand implemented using Intel x86-84/AMD64 SIMD intrinsics.
 
 ```
 $ python3
